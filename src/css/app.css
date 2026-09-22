@@ -1,0 +1,241 @@
+:root {
+  --ink: #16221f;
+  --muted: #5d6b66;
+  --paper: #f3f5f3;
+  --surface: #ffffff;
+  --line: #dde3df;
+  --spruce: #14312b;
+  --spruce-2: #1d4a41;
+  --brass: #b8862b;
+  --wood: #7a5533;
+  --ok-bg: #dcefe5;   --ok-fg: #1c5a3f;
+  --lent-bg: #f5e8c9; --lent-fg: #6a4a0c;
+  --late-bg: #f7dcd8; --late-fg: #8b2222;
+  --ret-bg: #e6eae8;  --ret-fg: #44514c;
+  --cafe-pastel: #e3cba6;
+}
+
+/* ---------- Tipografía base más grande y legible ---------- */
+html { font-size: 17.5px; }
+body {
+  font-family: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.6;
+}
+h1, h2, h3, .brand-name, .header-title, .dialog-title {
+  font-family: 'Literata', Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* Componentes de Quasar heredan de rem, pero algunos fijan px propios: los ajustamos aquí */
+.q-table td, .q-table th { font-size: 19px; }
+.q-item__label { font-size: 18px; }
+.q-item__label--caption, .q-field__bottom { font-size: 15px; }
+.q-field__native, .q-field__label, .q-btn__content, .q-tab__label { font-size: 17px; }
+.q-banner, .q-notification { font-size: 17px; }
+
+/* Quasar pone los botones y pestañas en MAYÚSCULAS: aquí se usa oración normal */
+.q-btn, .q-tab { text-transform: none; letter-spacing: 0; font-weight: 600; }
+
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+a { color: inherit; }
+.link { color: var(--spruce-2); font-weight: 600; text-decoration: none; }
+.link:hover { text-decoration: underline; }
+.muted { color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- Estructura de página ---------- */
+.page { max-width: 1200px; margin: 0 auto; padding: 28px 28px 72px; }
+@media (max-width: 599px) { .page { padding: 18px 16px 56px; } }
+
+.page-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; margin-bottom: 22px; }
+.page-title { font-size: 32px; line-height: 1.15; }
+.page-subtitle { margin: 6px 0 0; color: var(--muted); font-size: 15.5px; }
+.page-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.section-title { font-size: 22px; margin: 34px 0 14px; }
+.back-link { margin: -6px 0 10px -8px; }
+
+/* ---------- Banner "Biblioteca" (panel) ---------- */
+.library-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  overflow: hidden;
+  background: linear-gradient(120deg, var(--spruce) 0%, var(--spruce-2) 55%, #235349 100%);
+  border-radius: 16px;
+  padding: 40px 44px;
+  margin-bottom: 26px;
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(20, 49, 43, 0.28);
+}
+.library-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(560px 220px at 85% -20%, rgba(184, 134, 43, 0.35), transparent 70%);
+  pointer-events: none;
+}
+.library-banner__text { position: relative; z-index: 1; }
+.library-banner__eyebrow {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--cafe-pastel);
+  margin-bottom: 8px;
+}
+.library-banner__title { font-size: 42px; color: #fff; line-height: 1.1; }
+.library-banner__subtitle { margin: 12px 0 0; max-width: 460px; color: rgba(255, 255, 255, 0.85); font-size: 16px; }
+.library-banner__shelf {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  height: 118px;
+  padding-bottom: 10px;
+  border-bottom: 8px solid var(--wood);
+  flex: none;
+}
+.banner-spine {
+  width: 17px;
+  height: var(--h);
+  border-radius: 3px 3px 0 0;
+  background:
+    linear-gradient(to bottom, transparent 12%, rgba(255,255,255,.35) 12% 15%, transparent 15% 85%, rgba(255,255,255,.35) 85% 88%, transparent 88%),
+    var(--c);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+@media (max-width: 760px) {
+  .library-banner { flex-direction: column; align-items: flex-start; padding: 30px 26px; }
+  .library-banner__title { font-size: 34px; }
+  .library-banner__shelf { align-self: stretch; justify-content: center; }
+}
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
+.toolbar .search { flex: 1 1 260px; max-width: 420px; }
+
+/* ---------- Menú lateral ---------- */
+.side-nav .q-drawer__content { background: var(--spruce); color: #fff; padding: 22px 14px; }
+.side-nav .q-drawer { background: var(--spruce); }
+.brand { display: flex; align-items: center; gap: 12px; padding: 0 8px 20px; }
+.brand-name { font-size: 21px; color: #000000; }
+.brand-sub { font-size: 13.5px; color: rgba(0, 0, 0, 0.68); }
+.side-cta { width: 100%; margin-bottom: 18px; }
+
+.side-list .q-item {
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+  color: var(--ink);
+}
+.side-list.q-list .q-item,
+.side-list.q-list .q-item .q-icon { color: var(--ink) !important; }
+.side-list .q-item:hover { background: rgba(255, 255, 255, 0.07); }
+.side-list .side-active {
+  background: rgba(184, 134, 43, 0.22);
+  color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--brass), 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.mobile-bar { background: var(--cafe-pastel); color: var(--ink); }
+.mobile-bar .q-btn { color: var(--ink); }
+.header-title { color: var(--ink); font-size: 19px; }
+
+/* ---------- Estados ---------- */
+.status { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px 4px 9px; border-radius: 999px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.status--available { background: var(--ok-bg); color: var(--ok-fg); }
+.status--lent { background: var(--lent-bg); color: var(--lent-fg); }
+.status--overdue { background: var(--late-bg); color: var(--late-fg); }
+.status--returned { background: var(--ret-bg); color: var(--ret-fg); }
+
+/* ---------- Lomo de libro ---------- */
+.spine {
+  flex: none; width: 10px; align-self: stretch; min-height: 44px; border-radius: 2px;
+  background:
+    linear-gradient(to bottom, transparent 16%, rgba(255,255,255,.4) 16% 19%, transparent 19% 81%, rgba(255,255,255,.4) 81% 84%, transparent 84%),
+    var(--c);
+}
+.spine--lg { width: 18px; min-height: 96px; }
+
+/* ---------- Listas (libros y usuarios) ---------- */
+.rows { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 1px 2px rgba(22, 34, 31, 0.04); overflow: hidden; }
+.row-item { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 15px 18px; border-bottom: 1px solid var(--line); transition: background-color .12s ease; }
+.row-item:last-child { border-bottom: none; }
+.row-item:hover { background: rgba(29, 74, 65, 0.045); }
+.row-main { flex: 1 1 240px; min-width: 0; }
+.row-title { font-family: 'Literata', Georgia, serif; font-weight: 700; font-size: 18px; text-decoration: none; color: var(--ink); }
+.row-title:hover { text-decoration: underline; }
+.row-status { flex: 0 1 210px; min-width: 150px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.row-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.row-caption { font-size: 16px; color: var(--muted); }
+
+/* ---------- Detalle ---------- */
+.detail-head { display: flex; gap: 20px; align-items: stretch; margin-bottom: 24px; }
+.detail-head .grow { flex: 1; min-width: 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 10px; color: var(--muted); }
+.notice { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--brass); border-radius: 8px; padding: 15px 17px; margin-bottom: 8px; font-size: 15px; }
+.notice--late { border-left-color: #b02a2a; }
+.notice--ok { border-left-color: #1f7a54; }
+
+/* ---------- Tablas ---------- */
+.loans-table {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(22, 34, 31, 0.04);
+  width: 100%;
+  overflow: hidden;
+}
+.loans-table thead th { font-weight: 700; color: var(--muted); }
+.loans-table .q-table__middle { overflow-x: visible; }
+.loans-table .q-table td, .loans-table .q-table th { padding: 14px 16px; white-space: nowrap; }
+.loans-table .q-table td:first-child, .loans-table .q-table th:first-child { padding-left: 18px; }
+
+/* ---------- Estantería del panel ---------- */
+.shelf-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 24px 24px 18px; box-shadow: 0 1px 2px rgba(22, 34, 31, 0.04); }
+.shelf { display: flex; align-items: flex-end; gap: 5px; padding: 0 10px; min-height: 190px; overflow-x: auto; overflow-y: hidden; border-bottom: 9px solid var(--wood); }
+.shelf-slot { flex: none; width: 24px; border-radius: 3px 3px 0 0; transition: transform .15s ease; }
+.shelf-slot.is-available {
+  background:
+    linear-gradient(to bottom, transparent 10%, rgba(255,255,255,.4) 10% 12%, transparent 12% 88%, rgba(255,255,255,.4) 88% 90%, transparent 90%),
+    var(--c);
+}
+.shelf-slot.is-available:hover { transform: translateY(-8px); }
+.shelf-slot.is-lent, .shelf-slot.is-overdue { background: transparent; border: 2px dashed var(--brass); border-bottom: none; }
+.shelf-slot.is-overdue { border-color: #b02a2a; background: repeating-linear-gradient(135deg, rgba(176,42,42,.12) 0 4px, transparent 4px 8px); }
+.shelf-legend { display: flex; flex-wrap: wrap; gap: 8px 26px; list-style: none; margin: 14px 0 0; padding: 0; }
+.shelf-legend a { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); font-weight: 500; }
+.shelf-legend a:hover strong { text-decoration: underline; }
+.swatch { width: 12px; height: 20px; border-radius: 2px; flex: none; }
+.swatch--ok { background: var(--spruce-2); }
+.swatch--lent { border: 2px dashed var(--brass); }
+.swatch--late { border: 2px dashed #b02a2a; background: repeating-linear-gradient(135deg, rgba(176,42,42,.15) 0 3px, transparent 3px 6px); }
+
+.activity { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 1px 2px rgba(22, 34, 31, 0.04); }
+.activity .q-item { border-bottom: 1px solid var(--line); }
+.activity .q-item:last-child { border-bottom: none; }
+
+/* ---------- Formularios ---------- */
+.form-card { width: 480px; max-width: 94vw; }
+.dialog-title { font-size: 24px; }
+.loan-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; align-items: start; }
+@media (max-width: 899px) { .loan-layout { grid-template-columns: 1fr; } }
+.summary { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; box-shadow: 0 1px 2px rgba(22, 34, 31, 0.04); }
+.summary h2 { font-size: 19px; margin-bottom: 10px; }
+.summary dl { margin: 0; }
+.summary dt { font-size: 14px; color: var(--muted); margin-top: 10px; }
+.summary dd { margin: 2px 0 0; font-weight: 600; font-size: 16px; }
+.rules { margin: 14px 0 0; padding-left: 18px; color: var(--muted); font-size: 15px; }
+.rules li { margin-bottom: 4px; }
+.empty { text-align: center; padding: 44px 20px; color: var(--muted); }
+.empty .q-icon { color: var(--brass); margin-bottom: 8px; }
+.empty h2 { font-size: 20px; color: var(--ink); margin-bottom: 4px; }
