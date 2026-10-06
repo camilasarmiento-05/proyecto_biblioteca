@@ -39,16 +39,19 @@ function save(data) {
   }
 }
 
-function remove(user) {
+function toggle(user) {
+  const activating = user.active === false
   $q.dialog({
-    title: 'Eliminar usuario',
-    message: `¿Eliminar a ${user.name}? Esta acción no se puede deshacer.`,
-    ok: { label: 'Eliminar', unelevated: true, color: 'negative' },
+    title: activating ? 'Activar usuario' : 'Desactivar usuario',
+    message: activating
+      ? `¿Activar ${user.name}? Podrá volver a recibir préstamos.`
+      : `¿Desactivar ${user.name}? No podrá recibir préstamos hasta que lo actives de nuevo.`,
+    ok: { label: activating ? 'Activar' : 'Desactivar', unelevated: true, color: activating ? 'positive' : 'primary' },
     cancel: { label: 'Cancelar', flat: true, color: 'primary' }
   }).onOk(() => {
     try {
-      users.remove(user.id)
-      $q.notify({ type: 'positive', message: 'Usuario eliminado' })
+      users.toggleActive(user.id)
+      $q.notify({ type: 'positive', message: activating ? 'Usuario activado' : 'Usuario desactivado' })
     } catch (e) {
       $q.notify({ type: 'negative', message: e.message })
     }
@@ -72,7 +75,7 @@ function remove(user) {
 
     <div class="rows">
       <template v-if="rows.length">
-        <UserRow v-for="u in rows" :key="u.id" :user="u" @edit="openEdit" @remove="remove" />
+        <UserRow v-for="u in rows" :key="u.id" :user="u" @edit="openEdit" @toggle="toggle" />
       </template>
       <EmptyState v-else-if="users.items.length" icon="search_off" title="Ningún usuario coincide" text="Prueba con otro nombre o documento." />
       <EmptyState v-else icon="group" title="Aún no hay usuarios" text="Agrega el primero para poder prestarle libros.">

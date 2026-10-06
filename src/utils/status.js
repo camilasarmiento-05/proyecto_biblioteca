@@ -3,5 +3,6 @@ export const STATUS = {
   available: { label: 'Disponible', icon: 'check_circle' },
   lent: { label: 'Prestado', icon: 'schedule' },
   overdue: { label: 'Vencido', icon: 'warning' },
-  returned: { label: 'Devuelto', icon: 'task_alt' }
+  returned: { label: 'Devuelto', icon: 'task_alt' },
+  inactive: { label: 'Inactivo', icon: 'block' }
 }

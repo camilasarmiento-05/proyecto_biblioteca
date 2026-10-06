@@ -10,12 +10,12 @@ const loans = useLoansStore()
 
 // Ordenados por género y título, como en una estantería real.
 const shelf = computed(() =>
-  [...books.items]
+  [...books.activeItems]
     .sort((a, b) => a.genre.localeCompare(b.genre, 'es') || a.title.localeCompare(b.title, 'es'))
     .map((book) => ({ book, status: loans.bookStatus(book.id) }))
 )
 
-const onShelf = computed(() => books.total - loans.active.length)
+const onShelf = computed(() => books.activeTotal - loans.active.length)
 const lentOnTime = computed(() => loans.active.length - loans.overdue.length)
 </script>
 

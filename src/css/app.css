@@ -30,7 +30,9 @@ h1, h2, h3, .brand-name, .header-title, .dialog-title {
   letter-spacing: -0.01em;
   margin: 0;
 }
-
+td.q-td.text-left{
+  font-size: 16px;
+}
 /* Componentes de Quasar heredan de rem, pero algunos fijan px propios: los ajustamos aquí */
 .q-table td, .q-table th { font-size: 19px; }
 .q-item__label { font-size: 18px; }
@@ -157,6 +159,11 @@ a { color: inherit; }
 .status--lent { background: var(--lent-bg); color: var(--lent-fg); }
 .status--overdue { background: var(--late-bg); color: var(--late-fg); }
 .status--returned { background: var(--ret-bg); color: var(--ret-fg); }
+.status--inactive { background: #e6e8e7; color: #4a5551; }
+.row-item.is-inactive .row-main, .row-item.is-inactive .q-avatar { opacity: .6; }
+.row-desc { font-size: 15px; color: var(--muted); margin-top: 2px; max-width: 60ch; }
+.serial { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 14px; background: #eef1ef; border-radius: 4px; padding: 1px 6px; color: #3a4642; }
+.days-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 
 /* ---------- Lomo de libro ---------- */
 .spine {

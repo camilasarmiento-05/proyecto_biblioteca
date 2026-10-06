@@ -6,7 +6,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import { useBooksStore } from '@/stores/books'
 import { useUsersStore } from '@/stores/users'
 import { useLoansStore } from '@/stores/loans'
-import { LOAN_DAYS_DEFAULT, MAX_LOAN_DAYS, MAX_LOANS_PER_USER } from '@/utils/config'
+import { LOAN_DAYS_DEFAULT, LOAN_DAYS_OPTIONS, MAX_LOAN_DAYS, MAX_LOANS_PER_USER } from '@/utils/config'
 import { addDays, fmtDate, normalize, todayStr } from '@/utils/format'
 
 const $q = useQuasar()
@@ -17,7 +17,6 @@ const users = useUsersStore()
 const loans = useLoansStore()
 
 const today = todayStr()
-const maxDate = addDays(today, MAX_LOAN_DAYS)
 
 const toUserOpt = (u) => {
   const reason = loans.blockReason(u.id)
@@ -30,22 +29,24 @@ const preUser = users.byId(route.query.usuario)
 const preBook = books.byId(route.query.libro)
 const form = reactive({
   user: preUser && !loans.blockReason(preUser.id) ? toUserOpt(preUser) : null,
-  book: preBook && loans.isAvailable(preBook.id) ? toBookOpt(preBook) : null,
-  dueAt: addDays(today, LOAN_DAYS_DEFAULT)
+  book: preBook && preBook.active !== false && loans.isAvailable(preBook.id) ? toBookOpt(preBook) : null,
+  days: LOAN_DAYS_DEFAULT
 })
+const dueAt = computed(() => addDays(today, form.days))
 
 // Solo se ofrecen los libros que están disponibles; los usuarios bloqueados salen deshabilitados con su motivo.
 const userTerm = ref('')
 const bookTerm = ref('')
 const userOptions = computed(() =>
   users.items
+    .filter((u) => u.active !== false)
     .filter((u) => normalize(`${u.name} ${u.document}`).includes(normalize(userTerm.value)))
     .map(toUserOpt)
     .sort((a, b) => a.label.localeCompare(b.label, 'es'))
 )
 const bookOptions = computed(() =>
   books.items
-    .filter((b) => loans.isAvailable(b.id) && normalize(`${b.title} ${b.author}`).includes(normalize(bookTerm.value)))
+    .filter((b) => b.active !== false && loans.isAvailable(b.id) && normalize(`${b.title} ${b.author}`).includes(normalize(bookTerm.value)))
     .map(toBookOpt)
     .sort((a, b) => a.label.localeCompare(b.label, 'es'))
 )
@@ -53,11 +54,10 @@ const filterUsers = (val, update) => update(() => { userTerm.value = val })
 const filterBooks = (val, update) => update(() => { bookTerm.value = val })
 
 const userLoansCount = computed(() => (form.user ? loans.activeOfUser(form.user.value).length : 0))
-const dueRule = (v) => (!!v && v >= today && v <= maxDate) || `Elige una fecha entre hoy y ${fmtDate(maxDate)}`
 
 function submit() {
   try {
-    loans.lend({ bookId: form.book.value, userId: form.user.value, dueAt: form.dueAt })
+    loans.lend({ bookId: form.book.value, userId: form.user.value, days: form.days })
     $q.notify({ type: 'positive', message: `«${form.book.label}» prestado a ${form.user.label}` })
     router.push({ name: 'loans' })
   } catch (e) {
@@ -118,10 +118,23 @@ function submit() {
         </q-select>
 
         <div>
-          <q-input v-model="form.dueAt" outlined type="date" stack-label label="Fecha de devolución" :min="today" :max="maxDate" :rules="[dueRule]" />
-          <div class="row q-gutter-sm">
-            <q-btn v-for="d in [7, 14, 21, 30]" :key="d" outline dense color="primary" no-caps :label="`${d} días`" @click="form.dueAt = addDays(today, d)" />
+          <div class="text-subtitle2 q-mb-xs">Días de préstamo</div>
+          <div class="days-picker" role="radiogroup" aria-label="Días de préstamo">
+            <q-btn
+              v-for="d in LOAN_DAYS_OPTIONS"
+              :key="d"
+              dense
+              no-caps
+              color="primary"
+              :unelevated="form.days === d"
+              :outline="form.days !== d"
+              :label="`${d} ${d === 1 ? 'día' : 'días'}`"
+              role="radio"
+              :aria-checked="form.days === d"
+              @click="form.days = d"
+            />
           </div>
+          <div class="muted q-mt-sm">Fecha de devolución: <strong>{{ fmtDate(dueAt) }}</strong></div>
         </div>
 
         <div class="row q-gutter-sm q-pt-sm">
@@ -144,13 +157,14 @@ function submit() {
             <dd>{{ userLoansCount + 1 }} de {{ MAX_LOANS_PER_USER }} libros</dd>
           </template>
           <dt>Devuelve el</dt>
-          <dd>{{ fmtDate(form.dueAt) }}</dd>
+          <dd>{{ fmtDate(dueAt) }} ({{ form.days }} {{ form.days === 1 ? 'día' : 'días' }})</dd>
         </dl>
         <p v-else class="muted q-mb-none">Aquí verás el resumen cuando elijas un libro y un usuario.</p>
 
         <ul class="rules">
-          <li>Plazo habitual: {{ LOAN_DAYS_DEFAULT }} días, máximo {{ MAX_LOAN_DAYS }}.</li>
+          <li>Plazo habitual: {{ LOAN_DAYS_DEFAULT }} días, máximo {{ MAX_LOAN_DAYS }} (se elige con los botones).</li>
           <li>Cada usuario puede tener hasta {{ MAX_LOANS_PER_USER }} libros a la vez.</li>
+          <li>Los libros o usuarios inactivos no aparecen para prestar.</li>
           <li>Quien tenga un préstamo vencido no puede llevarse otro libro.</li>
         </ul>
       </aside>

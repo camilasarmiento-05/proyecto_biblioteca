@@ -16,24 +16,31 @@ const books = useBooksStore()
 const loans = useLoansStore()
 
 const search = ref('')
-const status = ref(['available', 'lent'].includes(route.query.estado) ? route.query.estado : 'all')
+const status = ref(['available', 'lent', 'inactive'].includes(route.query.estado) ? route.query.estado : 'all')
 const dialog = ref(false)
 const editing = ref(null)
 
-const availableCount = computed(() => books.items.filter((b) => loans.isAvailable(b.id)).length)
+const availableCount = computed(() => books.activeItems.filter((b) => loans.isAvailable(b.id)).length)
+const inactiveCount = computed(() => books.total - books.activeTotal)
 
 const rows = computed(() => {
   const term = normalize(search.value)
   return books.items
-    .filter((b) => !term || normalize(`${b.title} ${b.author} ${b.genre}`).includes(term))
-    .filter((b) => status.value === 'all' || (status.value === 'available') === loans.isAvailable(b.id))
+    .filter((b) => !term || normalize(`${b.title} ${b.author} ${b.genre} ${b.serial} ${b.description}`).includes(term))
+    .filter((b) => {
+      const inactive = b.active === false
+      if (status.value === 'all') return true
+      if (status.value === 'inactive') return inactive
+      return !inactive && (status.value === 'available') === loans.isAvailable(b.id)
+    })
     .sort((a, b) => a.title.localeCompare(b.title, 'es'))
 })
 
 const statusOptions = computed(() => [
   { value: 'all', label: `Todos (${books.total})` },
   { value: 'available', label: `Disponibles (${availableCount.value})` },
-  { value: 'lent', label: `Prestados (${books.total - availableCount.value})` }
+  { value: 'lent', label: `Prestados (${books.activeTotal - availableCount.value})` },
+  { value: 'inactive', label: `Inactivos (${inactiveCount.value})` }
 ])
 
 function openNew() { editing.value = null; dialog.value = true }
@@ -53,16 +60,19 @@ function save(data) {
   }
 }
 
-function remove(book) {
+function toggle(book) {
+  const activating = book.active === false
   $q.dialog({
-    title: 'Eliminar libro',
-    message: `¿Eliminar «${book.title}»? Esta acción no se puede deshacer.`,
-    ok: { label: 'Eliminar', unelevated: true, color: 'negative' },
+    title: activating ? 'Activar libro' : 'Desactivar libro',
+    message: activating
+      ? `¿Activar «${book.title}»? Volverá a estar disponible para prestar.`
+      : `¿Desactivar «${book.title}»? No se podrá prestar hasta que lo actives de nuevo.`,
+    ok: { label: activating ? 'Activar' : 'Desactivar', unelevated: true, color: activating ? 'positive' : 'primary' },
     cancel: { label: 'Cancelar', flat: true, color: 'primary' }
   }).onOk(() => {
     try {
-      books.remove(book.id)
-      $q.notify({ type: 'positive', message: 'Libro eliminado' })
+      books.toggleActive(book.id)
+      $q.notify({ type: 'positive', message: activating ? 'Libro activado' : 'Libro desactivado' })
     } catch (e) {
       $q.notify({ type: 'negative', message: e.message })
     }
@@ -81,14 +91,14 @@ function clearFilters() { search.value = ''; status.value = 'all' }
     </PageHeader>
 
     <div class="toolbar">
-      <q-input v-model="search" class="search" outlined dense clearable placeholder="Buscar por título, autor o género" aria-label="Buscar libros">
+      <q-input v-model="search" class="search" outlined dense clearable placeholder="Buscar por título, autor, género o serial" aria-label="Buscar libros">
         <template #prepend><q-icon name="search" /></template>
       </q-input>
       <q-btn-toggle v-model="status" unelevated toggle-color="primary" color="white" text-color="primary" :options="statusOptions" />
     </div>
 
     <div v-if="rows.length" class="rows">
-      <BookRow v-for="b in rows" :key="b.id" :book="b" @edit="openEdit" @remove="remove" />
+      <BookRow v-for="b in rows" :key="b.id" :book="b" @edit="openEdit" @toggle="toggle" />
     </div>
     <div v-else class="rows">
       <EmptyState

@@ -2,7 +2,9 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { seedLoans } from './seed'
 import { addDays, daysDiff, newId, todayStr } from '@/utils/format'
-import { DUE_SOON_DAYS, MAX_LOAN_DAYS, MAX_LOANS_PER_USER } from '@/utils/config'
+import { DUE_SOON_DAYS, LOAN_DAYS_OPTIONS, MAX_LOANS_PER_USER } from '@/utils/config'
+import { useBooksStore } from './books'
+import { useUsersStore } from './users'
 
 /**
  * Los PRÉSTAMOS son la única fuente de verdad.
@@ -12,7 +14,9 @@ import { DUE_SOON_DAYS, MAX_LOAN_DAYS, MAX_LOANS_PER_USER } from '@/utils/config
  *
  * Préstamo: { id, bookId, userId, lentAt, dueAt, returnedAt | null }  (fechas "YYYY-MM-DD")
  */
-export const useLoansStore = defineStore('loans', () => {
+export const useLoansStore = defineStore(
+  'loans',
+  () => {
   const items = ref(seedLoans())
 
   // ---- Consultas ----
@@ -26,6 +30,7 @@ export const useLoansStore = defineStore('loans', () => {
   const activeOfBook = (bookId) => activeByBook.value.get(bookId) ?? null
   const bookStatus = (bookId) => {
     const loan = activeOfBook(bookId)
+    if (!loan && useBooksStore().byId(bookId)?.active === false) return 'inactive'
     return !loan ? 'available' : isOverdue(loan) ? 'overdue' : 'lent'
   }
 
@@ -48,6 +53,7 @@ export const useLoansStore = defineStore('loans', () => {
 
   /** null si el usuario puede recibir un préstamo; si no, el motivo en texto. */
   function blockReason(userId) {
+    if (!useUsersStore().isActive(userId)) return 'Usuario inactivo'
     if (overdueOfUser(userId).length) return 'Tiene préstamos vencidos'
     if (activeOfUser(userId).length >= MAX_LOANS_PER_USER)
       return `Ya tiene ${MAX_LOANS_PER_USER} libros prestados`
@@ -55,14 +61,14 @@ export const useLoansStore = defineStore('loans', () => {
   }
 
   // ---- Acciones ----
-  function lend({ bookId, userId, dueAt }) {
+  function lend({ bookId, userId, days }) {
+    if (useBooksStore().byId(bookId)?.active === false) throw new Error('Ese libro está inactivo.')
     if (!isAvailable(bookId)) throw new Error('Ese libro ya está prestado.')
     const reason = blockReason(userId)
     if (reason) throw new Error(`No se puede prestar: ${reason.toLowerCase()}.`)
     const today = todayStr()
-    if (!dueAt || dueAt < today) throw new Error('La fecha de devolución debe ser hoy o posterior.')
-    if (dueAt > addDays(today, MAX_LOAN_DAYS))
-      throw new Error(`El plazo máximo es de ${MAX_LOAN_DAYS} días.`)
+    if (!LOAN_DAYS_OPTIONS.includes(days)) throw new Error('Elige un plazo de devolución válido.')
+    const dueAt = addDays(today, days)
 
     const loan = { id: newId('l'), bookId, userId, lentAt: today, dueAt, returnedAt: null }
     items.value.push(loan)
@@ -84,4 +90,6 @@ export const useLoansStore = defineStore('loans', () => {
     hasHistoryOfBook, hasHistoryOfUser, blockReason,
     lend, giveBack
   }
-})
+  },
+  { persist: { key: 'biblioteca-loans' } }
+)
